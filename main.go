@@ -13,13 +13,12 @@ type Contribute struct {
 	Count string
 }
 
-var contributions []Contribute
-
-func init() {
-	doc, err := goquery.NewDocument("https://github.com/users/konojunya/contributions")
+func getContribute(id string) []Contribute {
+	doc, err := goquery.NewDocument("https://github.com/users/" + id + "/contributions")
 	if err != nil {
 		log.Fatal(err)
 	}
+	var contributions []Contribute
 
 	doc.Find("rect").Each(func(_ int, s *goquery.Selection) {
 		date, _ := s.Attr("data-date")
@@ -29,13 +28,32 @@ func init() {
 			Count: count,
 		})
 	})
+
+	return contributions
 }
 
 func main() {
 
 	r := gin.Default()
+
+	r.Static("/js", "./public/js")
+	r.Static("/css", "./public/css")
+
+	r.LoadHTMLGlob("view/*")
+
+	// web
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
+
+	// api
 	r.GET("/api/contributions", func(c *gin.Context) {
-		c.JSON(http.StatusOK, contributions)
+		id := c.Query("id")
+		c.JSON(http.StatusOK, getContribute(id))
+	})
+
+	r.NoRoute(func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/")
 	})
 
 	r.Run(":8000")
