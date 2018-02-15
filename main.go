@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gin-gonic/gin"
@@ -56,6 +57,6 @@ func main() {
 		c.Redirect(http.StatusMovedPermanently, "/")
 	})
 
-	r.Run(":8000")
+	r.Run(":" + os.Getenv("PORT"))
 
 }
