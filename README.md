@@ -2,7 +2,7 @@
 
 コントリビューションをグラフにする
 
-![](https://raw.githubusercontent.com/konojunya/chart-contribution/master/screenshots/screen.png)
+![](https://raw.githubusercontent.com/konojunya/chart-contribution/master/screenshots/screen.gif)
 
 ## development
 
