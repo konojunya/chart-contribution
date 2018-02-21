@@ -1,11 +1,14 @@
 <template>
   <section>
-    <highcharts :options="options" ref="highcharts" v-if="isSet"></highcharts>
+    <highcharts :options="options" ref="highcharts" v-if="users.length >= 1"></highcharts>
     <div class="no-result" v-else></div>
     <div class="container">
       <input type="text" v-model="inputValue" class="input"/>
-      <button @click="update" class="button">更新</button>
+      <button @click="add" class="button">追加</button>
     </div>
+    <ul class="users">
+      <li v-for="user in users">{{user}}</li>
+    </ul>
   </section>
 </template>
 
@@ -16,29 +19,37 @@ export default {
   data() {
     return {
       options: {},
-      inputValue: "konojunya",
-      isSet: false
+      inputValue: "",
+      users: []
     }
   },
   mounted() {
-    this.getContributions(this.inputValue)
+    this.getContributions()
   },
   methods: {
-    update() {
-      this.getContributions(this.inputValue)
+    add() {
+      if(this.inputValue == "") {
+        return
+      }
+      this.users.push(this.inputValue)
+      this.getContributions()
+      this.inputValue = ""
     },
-    getContributions(username) {
+    getContributions() {
       ( async () => {
-        const res = await axios.get(`/api/contributions?id=${username}`)
+        const user = this.users.join("+")
+        if(user == "") return
 
-        this.isSet = res.data != null;
+        const res = await axios.get(`/api/contributions?users=${user}`)
 
-        let categories = []
-        let counts = []
+        let categories = res.data[0].contributions.map((contribute) => contribute.date).slice(-31)
+        let series = []
 
-        for(let contribute of res.data) {
-          categories.push(contribute.Date)
-          counts.push(parseInt(contribute.Count, 10))
+        for(let user of res.data) {
+          series.push({
+            name: user.id,
+            data: user.contributions.map((contribute) => parseInt(contribute.count)).slice(-31)
+          })
         }
 
         this.options = {
@@ -47,7 +58,7 @@ export default {
             x: -20
           },
           subtitle: {
-            text: `Source: github.com/${username}`,
+            text: `Source: github.com`,
             x: -20
           },
           xAxis: {
@@ -69,12 +80,7 @@ export default {
             verticalAlign: 'middle',
             borderWidth: 0
           },
-          series: [
-            {
-              name: 'contribute count',
-              data: counts
-            }
-          ]
+          series
         }
       })()
     }
@@ -83,6 +89,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+body, html {
+  width: 100%;
+  height: 100%;
+}
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
 .no-result {
   width: 100%;
   height: 400px;
@@ -92,8 +107,9 @@ export default {
   margin-top: 10px;
   display: flex;
   align-items: center;
+  margin-bottom: 10px;
   .input {
-    padding: 10px;
+    padding: 12px;
     font-size: 0.8rem;
     border: 1px solid gray;
   }
@@ -104,6 +120,20 @@ export default {
     font-weight: bold;
     font-size: 0.8rem;
     border: 1px solid gray;
+  }
+}
+.users {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  li {
+    padding: 10px;
+    margin: 5px;
+    background-color: rgb(246, 46, 136);
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
   }
 }
 </style>
