@@ -35,6 +35,12 @@ export default {
       this.getContributions()
       this.inputValue = ""
     },
+    getCategories(data) {
+      return data[0].contributions.map((contribute) => contribute.date).slice(-31)
+    },
+    getCount(user) {
+      return user.contributions.map((contribute) => parseInt(contribute.count)).slice(-31)
+    },
     getContributions() {
       ( async () => {
         const user = this.users.join("+")
@@ -42,13 +48,13 @@ export default {
 
         const res = await axios.get(`/api/contributions?users=${user}`)
 
-        let categories = res.data[0].contributions.map((contribute) => contribute.date).slice(-31)
+        let categories = this.getCategories(res.data)
         let series = []
 
         for(let user of res.data) {
           series.push({
             name: user.id,
-            data: user.contributions.map((contribute) => parseInt(contribute.count)).slice(-31)
+            data: this.getCount(user)
           })
         }
 
