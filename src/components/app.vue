@@ -35,60 +35,58 @@ export default {
       this.getContributions()
       this.inputValue = ""
     },
-    getCategories(data) {
-      return data[0].contributions.map((contribute) => contribute.date).slice(-31)
+    getCategories(users) {
+      return users[0].contributions.map((contribute) => contribute.date).slice(-31)
     },
     getCount(user) {
       return user.contributions.map((contribute) => parseInt(contribute.count)).slice(-31)
     },
-    getContributions() {
-      ( async () => {
-        const user = this.users.join("+")
-        if(user == "") return
+    async getContributions() {
+      const user = this.users.join("+")
+      if(user == "") return
 
-        const res = await axios.get(`/api/contributions?users=${user}`)
+      const res = await axios.get(`/api/contributions?users=${user}`)
 
-        let categories = this.getCategories(res.data)
-        let series = []
+      let categories = this.getCategories(res.data.users)
+      let series = []
 
-        for(let user of res.data) {
-          series.push({
-            name: user.id,
-            data: this.getCount(user)
-          })
-        }
+      for(let user of res.data.users) {
+        series.push({
+          name: user.id,
+          data: this.getCount(user)
+        })
+      }
 
-        this.options = {
+      this.options = {
+        title: {
+          text: 'contribute count',
+          x: -20
+        },
+        subtitle: {
+          text: `Source: github.com`,
+          x: -20
+        },
+        xAxis: {
+          categories
+        },
+        yAxis: {
           title: {
-            text: 'contribute count',
-            x: -20
+            text: 'count'
           },
-          subtitle: {
-            text: `Source: github.com`,
-            x: -20
-          },
-          xAxis: {
-            categories
-          },
-          yAxis: {
-            title: {
-              text: 'count'
-            },
-            plotLines: [{
-              value: 0,
-              width: 1,
-              color: '#808080'
-            }]
-          },
-          legend: {
-            layout: 'vertical',
-            align: 'right',
-            verticalAlign: 'middle',
-            borderWidth: 0
-          },
-          series
-        }
-      })()
+          plotLines: [{
+            value: 0,
+            width: 1,
+            color: '#808080'
+          }]
+        },
+        legend: {
+          layout: 'vertical',
+          align: 'right',
+          verticalAlign: 'middle',
+          borderWidth: 0
+        },
+        series
+      }
     }
   }
 }

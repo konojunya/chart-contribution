@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gin-gonic/gin"
@@ -43,21 +42,24 @@ func main() {
 			return
 		}
 
-		users := strings.Split(usersStr, " ")
+		userIds := strings.Split(usersStr, " ")
+		res := make(chan User, len(userIds))
+		users := make([]User, 0)
 
-		var wg sync.WaitGroup
-		var res []User
-
-		for _, userID := range users {
-			wg.Add(1)
-			go func(id string) {
-				res = append(res, getContribute(id))
-				wg.Done()
-			}(userID)
+		for _, userID := range userIds {
+			go func(id string, res chan User) {
+				log.Printf("Now Loading userID: %v\n", id)
+				res <- getContribute(id)
+			}(userID, res)
 		}
-		wg.Wait()
+		for _ = range userIds {
+			user := <-res
+			users = append(users, user)
+		}
 
-		c.JSON(http.StatusOK, res)
+		c.JSON(http.StatusOK, gin.H{
+			"users": users,
+		})
 	})
 
 	r.NoRoute(func(c *gin.Context) {
