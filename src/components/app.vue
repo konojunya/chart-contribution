@@ -140,7 +140,7 @@ body, html {
   li {
     padding: 10px;
     margin: 5px;
-    background-color: rgb(246, 46, 136);
+    border: 1px solid rgb(246, 46, 136);
     color: white;
     font-weight: 600;
     font-size: 0.8rem;

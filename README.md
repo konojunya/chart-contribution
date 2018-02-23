@@ -6,8 +6,8 @@
 
 ## development
 
-1. `npm install`
-2. `npm run build`
-3. `go run main.go`
+1. `make install`
+2. `make build`
+3. `make serve`
 
 access to http://localhost:8000
