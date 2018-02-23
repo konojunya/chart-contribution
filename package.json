@@ -21,6 +21,7 @@
   "dependencies": {
     "axios": "^0.17.1",
     "highcharts": "^6.0.5",
+    "query-string": "^5.1.0",
     "vue": "^2.5.13",
     "vue-highcharts": "0.0.10"
   },

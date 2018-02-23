@@ -14,6 +14,7 @@
 
 <script>
 import axios from 'axios'
+import queryString from 'query-string'
 
 export default {
   data() {
@@ -32,8 +33,13 @@ export default {
         return
       }
       this.users.push(this.inputValue)
+      location.search = `users=${this.users.join("+")}`
       this.getContributions()
       this.inputValue = ""
+    },
+    parseURL() {
+      const users = queryString.parse(location.search).users
+      this.users = users ? users.split(" ") : []
     },
     getCategories(users) {
       return users[0].contributions.map((contribute) => contribute.date).slice(-31)
@@ -42,10 +48,11 @@ export default {
       return user.contributions.map((contribute) => parseInt(contribute.count)).slice(-31)
     },
     async getContributions() {
-      const user = this.users.join("+")
-      if(user == "") return
+      this.parseURL()
+      const users = this.users.join("+")
+      if(users == "") return
 
-      const res = await axios.get(`/api/contributions?users=${user}`)
+      const res = await axios.get(`/api/contributions?users=${users}`)
 
       let categories = this.getCategories(res.data.users)
       let series = []
